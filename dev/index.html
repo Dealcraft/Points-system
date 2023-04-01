@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 	<head>
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -9,5 +9,30 @@
 	</head>
 	<body>
 		<h1>Hallo Welt</h1>
+
+		<script src="../script.js"></script>
+		<script>
+			const items = [
+				{
+					name: "javascript",
+					price: -100,
+				},
+				{
+					name: "typescript",
+					price: -100,
+				},
+				{
+					name: "python",
+					price: -100,
+				},
+				{
+					name: "php",
+					price: 100,
+				},
+			];
+
+			const ptm = new PTM(items);
+			ptm.buyItem("javascript");
+		</script>
 	</body>
 </html>
