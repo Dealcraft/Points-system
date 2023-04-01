@@ -6,7 +6,7 @@ class PTM {
 		startBalance: 100,
 		storage: localStorage,
 		storagePrefix: "ptm-",
-		logLevel: 4,
+		logLevel: 1,
 		name: "PTM",
 		currencyName: "pt",
 	};
@@ -18,8 +18,8 @@ class PTM {
 	};
 
 	constructor(items, options) {
-		console.info(`Version ${this.#version} of point system`);
-		this.#options = { ...this.#options, options };
+		this.#info(true, `Version ${this.#version} of point system`);
+		this.#options = { ...this.#options, ...options };
 		this.#items = items;
 		this.#loadUser();
 	}
@@ -46,7 +46,8 @@ class PTM {
 
 	getItem(itemName) {
 		const item = this.#items.find((item) => item.name === itemName);
-		if (!item) return this.#warn(`item '${itemName}' does not exist`);
+		if (!item)
+			return this.#warn(false, `item '${itemName}' does not exist`);
 		return item;
 	}
 
@@ -99,7 +100,7 @@ class PTM {
 		timestamp += String(time.getDate()).padStart(2, "0") + " ";
 		timestamp += String(time.getHours()).padStart(2, "0") + ":";
 		timestamp += String(time.getMinutes()).padStart(2, "0") + ":";
-		timestamp += String(time.getSeconds()).padStart(2, "0") + "]";
+		timestamp += String(time.getSeconds()).padStart(2, "0") + "] ";
 		return timestamp;
 	}
 
@@ -112,62 +113,128 @@ class PTM {
 	}
 
 	#log(...args) {
+		let concat = true;
+		let output = [];
+
 		if (this.#options.logLevel >= 4) {
 			const timestamp = this.#generateLogTimestamp("Log");
-			console.log(timestamp, ...args);
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.log(...output);
 		}
 	}
 
-	#info(...args) {
-		if (this.#options.logLevel >= 3) {
+	#info(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
+
+		if (this.#options.logLevel >= 3 || bypassLogLevel) {
 			const timestamp = this.#generateLogTimestamp("Info");
-			console.info(timestamp, ...args);
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.info(...output);
 		}
 	}
 
-	#warn(...args) {
-		if (this.#options.logLevel >= 2) {
+	#warn(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
+
+		if (this.#options.logLevel >= 2 || bypassLogLevel) {
 			const timestamp = this.#generateLogTimestamp("Warn");
-			console.warn(timestamp, ...args);
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.warn(...output);
 		}
 	}
 
-	#error(...args) {
-		if (this.#options.logLevel >= 1) {
+	#error(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
+
+		if (this.#options.logLevel >= 1 || bypassLogLevel) {
 			const timestamp = this.#generateLogTimestamp("Error");
-			console.error(timestamp, ...args);
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.error(...output);
 		}
 	}
 
 	/** Deprecated methods */
 	withdraw(amount) {
-		this.#warn(this.#deprecatedWarning("function withdraw"));
+		this.#warn(true, this.#deprecatedWarning("function withdraw"));
 		this.chargeUser(-amount);
 	}
 
 	deposit(amount) {
-		this.#warn(this.#deprecatedWarning("function dposit"));
+		this.#warn(true, this.#deprecatedWarning("function dposit"));
 		this.chargeUser(amount);
 	}
 
 	buy(itemName) {
-		this.#warn(this.#deprecatedWarning("function buy"));
+		this.#warn(true, this.#deprecatedWarning("function buy"));
 		this.buyItem(itemName);
 	}
 
 	userHas(itemName) {
-		this.#warn(this.#deprecatedWarning("function userHas"));
+		this.#warn(true, this.#deprecatedWarning("function userHas"));
 		this.hasItem(itemName);
 	}
 
 	safeUser() {
 		this.#error(
+			true,
 			`function safeUser is deprecated and therefore not available anymore`
 		);
 	}
 
 	refreshPTMs() {
 		this.#error(
+			true,
 			`function refreshPTMs is deprecated and therefore not available anymore`
 		);
 	}
