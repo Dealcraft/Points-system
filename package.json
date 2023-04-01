@@ -1,10 +1,9 @@
 {
   "name": "point-system",
-  "version": "2.0.0-beta",
+  "version": "2.0.0-beta.1",
   "description": "A point-system for websites",
   "main": "script.js",
   "scripts": {
-    "publish": "npm publish --access public"
   },
   "repository": {
     "type": "git",

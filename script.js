@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.0.0-beta";
+	#version = "2.0.0-beta.1";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -9,19 +9,32 @@ class PTM {
 		logLevel: 1,
 		name: "PTM",
 		currencyName: "pt",
+		removeUnavailableItems: false,
 	};
 	#items = [];
+	#callback;
 
 	#user = {
 		balance: this.#options.startBalance,
 		ownedItems: [],
 	};
 
-	constructor(items, options) {
+	constructor(items, options, callback) {
 		this.#info(true, `Version ${this.#version} of point system`);
+		this.#info(true, "Initializing PTM");
 		this.#options = { ...this.#options, ...options };
 		this.#items = items;
+		this.#callback = function () {
+			try {
+				this.#log("calling callback");
+				callback(this.#user, this.#items);
+			} catch (e) {
+				this.#error(false, e);
+			}
+		};
 		this.#loadUser();
+		this.#info(true, "Finished initializing PTM");
+		this.#callback();
 	}
 
 	hasItem(itemName) {
@@ -30,6 +43,7 @@ class PTM {
 	}
 
 	buyItem(itemName) {
+		this.#log(`buying item '${itemName}'`);
 		if (this.hasItem(itemName))
 			return this.#log(`user already has '${itemName}'`);
 
@@ -42,9 +56,12 @@ class PTM {
 		this.chargeUser(item.price);
 		this.#user.ownedItems.push(item);
 		this.#saveUser();
+		this.#callback();
+		return this;
 	}
 
 	getItem(itemName) {
+		this.#log(`searching ${itemName}`);
 		const item = this.#items.find((item) => item.name === itemName);
 		if (!item)
 			return this.#warn(false, `item '${itemName}' does not exist`);
@@ -52,6 +69,13 @@ class PTM {
 	}
 
 	chargeUser(amount) {
+		this.#log(`charging user ${amount}${this.#options.currencyName}`);
+		try {
+			amount = Number(amount);
+		} catch (e) {
+			this.#error(false, e);
+		}
+
 		if (amount < 0) {
 			this.#log(
 				`charged user for ${amount * -1}${this.#options.currencyName}`
@@ -63,31 +87,50 @@ class PTM {
 		}
 		this.#user.balance += amount;
 		this.#saveUser();
+		this.#callback();
+		return this;
 	}
 
 	getBalance() {
+		this.#log(`getting balance`);
 		return this.#user.balance;
 	}
 
+	getUserItems() {
+		this.#log(`getting user items`);
+		return this.#user.ownedItems;
+	}
+
 	#saveUser() {
-		this.#log("save user");
+		this.#log("saving user");
 		const base64 = btoa(JSON.stringify(this.#user));
 		this.#options.storage.setItem(
 			this.#options.storagePrefix + "user",
 			base64
 		);
+		this.#log("saved user");
 	}
 
 	#loadUser() {
 		this.#log("load user from storage");
+
 		const base64 = this.#options.storage.getItem(
 			this.#options.storagePrefix + "user"
 		);
 
 		if (base64) {
+			this.#log("parsing storage data");
 			this.#user = JSON.parse(atob(base64));
-			this.#log(this.#user);
+			if (this.#options.removeUnavailableItems) {
+				this.#log("removing unavailable items");
+				this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
+					this.#items.some((item) => item.name === oi.name)
+				);
+				this.#saveUser();
+			}
+			this.#log("parsed user from storage ", this.#user);
 		} else {
+			this.#log("no user found");
 			this.#saveUser();
 		}
 	}
@@ -207,22 +250,22 @@ class PTM {
 	/** Deprecated methods */
 	withdraw(amount) {
 		this.#warn(true, this.#deprecatedWarning("function withdraw"));
-		this.chargeUser(-amount);
+		return this.chargeUser(-amount);
 	}
 
 	deposit(amount) {
 		this.#warn(true, this.#deprecatedWarning("function dposit"));
-		this.chargeUser(amount);
+		return this.chargeUser(amount);
 	}
 
 	buy(itemName) {
 		this.#warn(true, this.#deprecatedWarning("function buy"));
-		this.buyItem(itemName);
+		return this.buyItem(itemName);
 	}
 
 	userHas(itemName) {
 		this.#warn(true, this.#deprecatedWarning("function userHas"));
-		this.hasItem(itemName);
+		return this.hasItem(itemName);
 	}
 
 	safeUser() {
