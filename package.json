@@ -1,0 +1,18 @@
+{
+  "name": "points-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dealcraft/Points-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dealcraft/Points-system/issues"
+  },
+  "homepage": "https://github.com/Dealcraft/Points-system#readme"
+}
