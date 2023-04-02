@@ -52,11 +52,32 @@ You can charge the user without buying an item by using the chargeUser method an
 ptm.chargeUser(100); // positive amount -> adding to user's balance
 ```
 
-For displaying the user's balance you can use the getBalance method.
+For displaying the user's balance you can use the balance read-only property.
 
 ```javascript
-ptm.getBalance(); // returns the user's balance
+ptm.balance; // returns the user's balance
 ```
+
+## Available Methods And Properties
+
+### Methods
+| name       | parameter | return value | description                                                                                |
+|------------|-----------|--------------|--------------------------------------------------------------------------------------------|
+| hasItem    | itemName  | boolean      | Returns a boolean indicating whether user has the specified item                           |
+| buyItem    | itemName  | this         | Adds the item (if existing) to the user's items if the user has enough balance             |
+| getItem    | itemName  | Item         | Returns the data for a specified item from the item list                                   |
+| chargeUser | amount    | this         | Charges the user with the given amount. Negative values will be subtracted, positive added |
+
+### Properties
+| name      | readable | writeable | type                  | description                                        |
+|-----------|----------|-----------|-----------------------|----------------------------------------------------|
+| balance   | [ x ]    |           | number                | Current user's balance                             |
+| userItems | [ x ]    |           | Items[]               | The items owned by the user                        |
+| items     | [ x ]    | [ x ]     | Items[]               | All available items                                |
+| user      | [ x ]    |           | User                  |                                                    |
+| VERSION   | [ x ]    |           | VERSION               | The installed version                              |
+| options   |          | [ x ]     | Options               | Updates the options                                |
+| callback  |          | [ x ]     | function(user, items) | Updates the callback called when user gets updated |
 
 ## Customization
 
@@ -67,12 +88,13 @@ The PTM class provides a couple of options to customize the behavior. If you wan
 | option key             | default      | type     | description                                                                               |
 | ---------------------- | ------------ | -------- | ----------------------------------------------------------------------------------------- |
 | startBalance           | 100          | number   | The start balance with which each new user starts                                         |
-| storage                | localStorage | storage  | The storage where the user data gets saved persisently                                    |
+| storage                | localStorage | Storage  | The storage where the user data gets saved persistently                                   |
 | storagePrefix          | ptm-         | string   | The prefix for all data saved in the storage                                              |
-| logLevel               | 1            | logLevel | Indicating which types of events get logged                                               |
+| logLevel               | 1            | LogLevel | Indicating which types of events get logged                                               |
 | name                   | PTM          | string   | The name visible in the logs                                                              |
 | currencyName           | pt           | string   | The currency appended to the item price in the logs                                       |
 | removeUnavailableItems | false        | boolean  | Whether to remove items from the user if they are not present in the available items list |
+| loggingTo              | console      | Logger   | The logger used to log events                                                             |
 
 ## Refreshing the data
 
@@ -92,7 +114,7 @@ Type definitions for clarity about the types used in the documentation
 
 ### Storage
 
-Every storage object implementing the following methods can be used to store the data (e.g. localStorage)
+Every storage object implementing the following methods can be used to store the data persistently (e.g. localStorage)
 
 | field   | type                 | description                                                                                 |
 | ------- | -------------------- | ------------------------------------------------------------------------------------------- |
@@ -102,17 +124,29 @@ Every storage object implementing the following methods can be used to store the
 ### LogLevel
 
 A number indicating which type of events get logged.
-| level | events |
-|-------|----------|
-| 0 | nothing |
-| <= 1 | errors |
-| <= 2 | warnings |
-| <= 3 | infos |
-| <= 4 | logs |
+
+| level | events   |
+| ----- | -------- |
+| 0     | nothing  |
+| <= 1  | errors   |
+| <= 2  | warnings |
+| <= 3  | infos    |
+| <= 4  | logs     |
 
 ### User
 
 | field      | type   | description                       |
-|------------|--------|-----------------------------------|
+| ---------- | ------ | --------------------------------- |
 | balance    | number | The current balance of the user   |
 | ownedItems | item[] | All the items which the user owns |
+
+### Logger
+
+Every logger implementing the following methods can be used to log the events
+
+| field | type              | description                                                                                    |
+| ----- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| log   | function(...args) | A function accepting a undefined number of arguments as input and logs them as a log entry     |
+| info  | function(...args) | A function accepting a undefined number of arguments as input and logs them as a info entry    |
+| warn  | function(...args) | A function accepting a undefined number of arguments as input and logs them as a warning entry |
+| error | function(...args) | A function accepting a undefined number of arguments as input and logs them as a error entry   |
