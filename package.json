@@ -1,8 +1,9 @@
 {
   "name": "point-system",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0",
   "description": "A point-system for websites",
   "main": "script.js",
+  "unpkg": "script.js",
   "scripts": {
   },
   "repository": {
@@ -10,9 +11,14 @@
     "url": "git+https://github.com/Dealcraft/Points-system.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Dealcraft/Points-system/issues"
   },
-  "homepage": "https://dealcraft.github.io/point-system"
+  "homepage": "https://dealcraft.github.io/point-system",
+  "keywords": [
+    "point-system",
+    "front-end",
+    "vanilla"
+  ]
 }

@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.0.0-beta.1";
+	#version = "2.0.0";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -25,11 +25,13 @@ class PTM {
 		this.#options = { ...this.#options, ...options };
 		this.#items = items;
 		this.#callback = function () {
-			try {
-				this.#log("calling callback");
-				callback(this.#user, this.#items);
-			} catch (e) {
-				this.#error(false, e);
+			if (callback) {
+				try {
+					this.#log("calling callback");
+					callback(this.#user, this.#items);
+				} catch (e) {
+					this.#error(false, e);
+				}
 			}
 		};
 		this.#loadUser();
