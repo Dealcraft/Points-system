@@ -19,7 +19,12 @@ jobs:
           registry-url: https://npm.pkg.github.com
       - run: npm --version
       - run: npm ci
+      - run: npm login --registry=https://npm.pkg.github.com/ --scope=@dealcraft
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm publish --registry=https://npm.pkg.github.com/ --scope=@dealcraft
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm logout --scope=dealcraft --registry=https://npm.pkg.github.com/
