@@ -1,179 +1,286 @@
+"use strict";
+
 class PTM {
+	#version = "2.0.0";
+	#options = {
+		startBalance: 100,
+		storage: localStorage,
+		storagePrefix: "ptm-",
+		logLevel: 1,
+		name: "PTM",
+		currencyName: "pt",
+		removeUnavailableItems: false,
+	};
+	#items = [];
+	#callback;
 
-    balance = 0
-    PTMS = []
-    items = []
-    user = {
-        'ownedItems': [
+	#user = {
+		balance: this.#options.startBalance,
+		ownedItems: [],
+	};
 
-        ],
-        'balance': 0
-    }
-    selector = '.ptm'
-    options = {
-        class: 'ptm',
-        jsonDir: './',
-        itemList: 'items.json',
-        localStoragePrefix: 'ptm-',
-        ownedText: 'Owned',
-    }
+	constructor(items, options, callback) {
+		this.#info(true, `Version ${this.#version} of point system`);
+		this.#info(true, "Initializing PTM");
+		this.#options = { ...this.#options, ...options };
+		this.#items = items;
+		this.#callback = function () {
+			if (callback) {
+				try {
+					this.#log("calling callback");
+					callback(this.#user, this.#items);
+				} catch (e) {
+					this.#error(false, e);
+				}
+			}
+		};
+		this.#loadUser();
+		this.#info(true, "Finished initializing PTM");
+		this.#callback();
+	}
 
-    constructor(selector, options){
-        this.selector = selector
-        this.user = JSON.parse(localStorage.getItem(this.options.localStoragePrefix + 'user'))
-        this.items = this.readJson(this.options.jsonDir + this.options.itemList)
-        this.options = {...options, ...this.options}
-        this.PTMS = document.querySelectorAll(this.selector)
-        this.PTMS.forEach(_PTM => {
-            // Clearout PTM-container
-            _PTM.innerHTML = ''
+	hasItem(itemName) {
+		this.#log(`checking user items for '${itemName}'`);
+		return this.#user.ownedItems.some((item) => item.name === itemName);
+	}
 
-            // Create PTM-balance element
-            var el = document.createElement('div')
-            el.classList.add(this.options.class + '-balance')
-            el.innerHTML = this.user.balance
-            _PTM.appendChild(el)
+	buyItem(itemName) {
+		this.#log(`buying item '${itemName}'`);
+		if (this.hasItem(itemName))
+			return this.#log(`user already has '${itemName}'`);
 
-            // Create PTM-items-list
-            var el = document.createElement('div')
-            el.classList.add(this.options.class + '-items-list')
-            
-            // Create item for list
-            this.items.forEach(item => {
-                var itemEl = document.createElement('div')
-                itemEl.classList.add(this.options.class + '-item')
+		const item = this.getItem(itemName);
+		if (!item) return;
 
-                // Check if item is already owned
-                if(this.user.ownedItems.includes(item.name)){
-                    var owned = document.createElement('span')
-                    owned.classList.add(this.options.class + '-owned')
-                    owned.innerHTML = this.options.ownedText
-                    itemEl.classList.add(this.options.class + '-item-owned')
-                    itemEl.innerHTML = item.name
-                    itemEl.appendChild(owned)
-                } else {
-                    var price = document.createElement('span')
-                    price.classList.add(this.options.class + '-item-price')
-                    price.innerHTML = item.price
-                    itemEl.innerHTML = item.name
-                    itemEl.addEventListener('click', (e) => {
-                        console.log(item.name)
-                        if(this.buy(item.name)){
-                            this.refreshPTMs()
-                        }
-                    })
-                    itemEl.appendChild(price)
-                }
+		if (this.#user.balance + item.price < 0)
+			return this.#log(`insufficient balance`);
 
-                el.appendChild(itemEl)
-            })
+		this.chargeUser(item.price);
+		this.#user.ownedItems.push(item);
+		this.#saveUser();
+		this.#callback();
+		return this;
+	}
 
-            _PTM.appendChild(el)
-            
-        })
-    }
+	getItem(itemName) {
+		this.#log(`searching ${itemName}`);
+		const item = this.#items.find((item) => item.name === itemName);
+		if (!item)
+			return this.#warn(false, `item '${itemName}' does not exist`);
+		return item;
+	}
 
-    withdraw(points){
-        if(this.user.balance - points >= 0){
-            this.user.balance = this.user.balance - points
-            this.safeUser()
-            return true
-        } else return false
-    }
+	chargeUser(amount) {
+		this.#log(`charging user ${amount}${this.#options.currencyName}`);
+		try {
+			amount = Number(amount);
+		} catch (e) {
+			this.#error(false, e);
+		}
 
-    deposit(points){
-        this.user.balance = this.user.balance + points
-        this.safeUser()
-    }
+		if (amount < 0) {
+			this.#log(
+				`charged user for ${amount * -1}${this.#options.currencyName}`
+			);
+		} else {
+			this.#log(
+				`added ${amount}${this.#options.currencyName} to user balance`
+			);
+		}
+		this.#user.balance += amount;
+		this.#saveUser();
+		this.#callback();
+		return this;
+	}
 
-    buy(itemName){
-        var item = this.items.filter(item => item.name == itemName)[0]
+	getBalance() {
+		this.#log(`getting balance`);
+		return this.#user.balance;
+	}
 
-        if(this.user.balance - item.price >= 0){
-            this.user.balance = this.user.balance - item.price
-        } else {
-            return
-        }
+	getUserItems() {
+		this.#log(`getting user items`);
+		return this.#user.ownedItems;
+	}
 
-        this.user.ownedItems.push(item.name)
-        this.safeUser()
-        return true
-    }
+	#saveUser() {
+		this.#log("saving user");
+		const base64 = btoa(JSON.stringify(this.#user));
+		this.#options.storage.setItem(
+			this.#options.storagePrefix + "user",
+			base64
+		);
+		this.#log("saved user");
+	}
 
-    getBalance(){
-        return this.user.balance
-    }
+	#loadUser() {
+		this.#log("load user from storage");
 
-    setBalance(balance){
-        this.user.balance = balance
-        this.safeUser()
-    }
+		const base64 = this.#options.storage.getItem(
+			this.#options.storagePrefix + "user"
+		);
 
-    refreshPTMs(){
-        this.PTMS.forEach(_PTM => {
-            // Clearout PTM-container
-            _PTM.innerHTML = ''
+		if (base64) {
+			this.#log("parsing storage data");
+			this.#user = JSON.parse(atob(base64));
+			if (this.#options.removeUnavailableItems) {
+				this.#log("removing unavailable items");
+				this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
+					this.#items.some((item) => item.name === oi.name)
+				);
+				this.#saveUser();
+			}
+			this.#log("parsed user from storage ", this.#user);
+		} else {
+			this.#log("no user found");
+			this.#saveUser();
+		}
+	}
 
-            // Create PTM-balance element
-            var el = document.createElement('div')
-            el.classList.add(this.options.class + '-balance')
-            el.innerHTML = this.user.balance
-            _PTM.appendChild(el)
+	#generateLogTimestamp(type) {
+		const time = new Date();
+		let timestamp = `[${this.#options.name} ${type} `;
+		timestamp += time.getFullYear() + "-";
+		timestamp += String(time.getMonth() + 1).padStart(2, "0") + "-";
+		timestamp += String(time.getDate()).padStart(2, "0") + " ";
+		timestamp += String(time.getHours()).padStart(2, "0") + ":";
+		timestamp += String(time.getMinutes()).padStart(2, "0") + ":";
+		timestamp += String(time.getSeconds()).padStart(2, "0") + "] ";
+		return timestamp;
+	}
 
-            // Create PTM-items-list
-            var el = document.createElement('div')
-            el.classList.add(this.options.class + '-items-list')
-            
-            // Create item for list
-            this.items.forEach(item => {
-                var itemEl = document.createElement('div')
-                itemEl.classList.add(this.options.class + '-item')
+	#deprecatedWarning(descriptor) {
+		let deprecatedWarning = new Error(
+			`${descriptor} is deprecated and will be removed in the future}`
+		);
+		deprecatedWarning.name = "Deprecated warning";
+		return deprecatedWarning;
+	}
 
-                // Check if item is already owned
-                if(this.user.ownedItems.includes(item.name)){
-                    var owned = document.createElement('span')
-                    owned.classList.add(this.options.class + '-owned')
-                    owned.innerHTML = this.options.ownedText
-                    itemEl.classList.add(this.options.class + '-item-owned')
-                    itemEl.innerHTML = item.name
-                    itemEl.appendChild(owned)
-                } else {
-                    var price = document.createElement('span')
-                    price.classList.add(this.options.class + '-item-price')
-                    price.innerHTML = item.price
-                    itemEl.innerHTML = item.name
-                    itemEl.addEventListener('click', (e) => {
-                        console.log(item.name)
-                        if(this.buy(item.name)){
-                            this.refreshPTMs()
-                        }
-                    })
-                    itemEl.appendChild(price)
-                }
+	#log(...args) {
+		let concat = true;
+		let output = [];
 
-                el.appendChild(itemEl)
-            })
+		if (this.#options.logLevel >= 4) {
+			const timestamp = this.#generateLogTimestamp("Log");
+			output.push(timestamp);
 
-            _PTM.appendChild(el)
-            
-        })
-    }
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.log(...output);
+		}
+	}
 
-    userHas(item){
-        if(this.user.ownedItems.includes(item)) return true
-        else return false
-    }
+	#info(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
 
-    safeUser(){
-        localStorage.setItem(this.options.localStoragePrefix + 'user', JSON.stringify(this.user))
-    }
+		if (this.#options.logLevel >= 3 || bypassLogLevel) {
+			const timestamp = this.#generateLogTimestamp("Info");
+			output.push(timestamp);
 
-    readJson(file){
-        var request = new XMLHttpRequest()
-        request.open("GET", file, false)
-        request.overrideMimeType("application/json")
-        request.send(null)
-        return JSON.parse(request.responseText)
-    }
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.info(...output);
+		}
+	}
 
+	#warn(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
+
+		if (this.#options.logLevel >= 2 || bypassLogLevel) {
+			const timestamp = this.#generateLogTimestamp("Warn");
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.warn(...output);
+		}
+	}
+
+	#error(bypassLogLevel = false, ...args) {
+		let concat = true;
+		let output = [];
+
+		if (this.#options.logLevel >= 1 || bypassLogLevel) {
+			const timestamp = this.#generateLogTimestamp("Error");
+			output.push(timestamp);
+
+			for (const arg of args) {
+				if (
+					concat &&
+					(typeof arg === "string" ||
+						typeof arg === "number" ||
+						typeof arg === "bigint")
+				)
+					output[0] += arg;
+				else output.push(arg);
+				concat = false;
+			}
+			console.error(...output);
+		}
+	}
+
+	/** Deprecated methods */
+	withdraw(amount) {
+		this.#warn(true, this.#deprecatedWarning("function withdraw"));
+		return this.chargeUser(-amount);
+	}
+
+	deposit(amount) {
+		this.#warn(true, this.#deprecatedWarning("function dposit"));
+		return this.chargeUser(amount);
+	}
+
+	buy(itemName) {
+		this.#warn(true, this.#deprecatedWarning("function buy"));
+		return this.buyItem(itemName);
+	}
+
+	userHas(itemName) {
+		this.#warn(true, this.#deprecatedWarning("function userHas"));
+		return this.hasItem(itemName);
+	}
+
+	safeUser() {
+		this.#error(
+			true,
+			`function safeUser is deprecated and therefore not available anymore`
+		);
+	}
+
+	refreshPTMs() {
+		this.#error(
+			true,
+			`function refreshPTMs is deprecated and therefore not available anymore`
+		);
+	}
 }
