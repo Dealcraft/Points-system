@@ -124,12 +124,12 @@
 			function updateValues(user, itemsPTM) {
 				console.log(user, itemsPTM);
 				createItemList(items, itemContainer);
-				createItemList(ptm.getUserItems(), ownedItemsContainer);
+				createItemList(ptm.userItems, ownedItemsContainer);
 				renderBalance();
 			}
 
 			function renderBalance() {
-				currentBalanceContainer.innerHTML = `<h2>Current Balance: ${ptm.getBalance()}pt</h2>`;
+				currentBalanceContainer.innerHTML = `<h2>Current Balance: ${ptm.balance}pt</h2>`;
 			}
 
 			updateValues();
