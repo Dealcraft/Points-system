@@ -15,16 +15,12 @@ jobs:
       # Setup .npmrc file to publish to GitHub Packages
       - uses: actions/setup-node@v3
         with:
-          node-version: 15
+          node-version: 16
           registry-url: https://npm.pkg.github.com
       - run: npm --version
       - run: npm ci
-      - run: npm login --registry=https://npm.pkg.github.com/ --scope=@dealcraft
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm publish --registry=https://npm.pkg.github.com/ --scope=@dealcraft
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm logout --scope=dealcraft --registry=https://npm.pkg.github.com/
+          
