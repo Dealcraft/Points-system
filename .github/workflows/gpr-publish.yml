@@ -17,7 +17,9 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: https://npm.pkg.github.com
+      - run: cat .npmrc
+      - run: npm --version
       - run: npm ci
-      - run: npm publish --access=public --always-auth --registry=https://npm.pkg.github.com/dealcraft --scope=@dealcraft
+      - run: npm publish --registry=https://npm.pkg.github.com/ --scope=@dealcraft
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
