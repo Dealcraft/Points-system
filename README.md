@@ -61,16 +61,19 @@ ptm.balance; // returns the user's balance
 ## Available Methods And Properties
 
 ### Methods
+
 | name       | parameter | return value | description                                                                                |
-|------------|-----------|--------------|--------------------------------------------------------------------------------------------|
+| ---------- | --------- | ------------ | ------------------------------------------------------------------------------------------ |
 | hasItem    | itemName  | boolean      | Returns a boolean indicating whether user has the specified item                           |
 | buyItem    | itemName  | this         | Adds the item (if existing) to the user's items if the user has enough balance             |
 | getItem    | itemName  | Item         | Returns the data for a specified item from the item list                                   |
 | chargeUser | amount    | this         | Charges the user with the given amount. Negative values will be subtracted, positive added |
+| sellItem   | itemName  | this         | Removes the item from the user's items if the user previously bought the item              |
 
 ### Properties
+
 | name      | readable | writeable | type                  | description                                        |
-|-----------|----------|-----------|-----------------------|----------------------------------------------------|
+| --------- | -------- | --------- | --------------------- | -------------------------------------------------- |
 | balance   | [ x ]    |           | number                | Current user's balance                             |
 | userItems | [ x ]    |           | Items[]               | The items owned by the user                        |
 | items     | [ x ]    | [ x ]     | Items[]               | All available items                                |
