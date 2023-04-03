@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.1.0";
+	#version = "2.2.1";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,

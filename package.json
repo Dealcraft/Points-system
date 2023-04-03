@@ -1,6 +1,6 @@
 {
   "name": "point-system",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A point-system for websites",
   "main": "script.js",
   "unpkg": "script.js",
