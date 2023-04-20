@@ -37,44 +37,54 @@
 
 			const items = [
 				{
+					id: 1,
 					name: "Python",
 					price: -1000,
 				},
 				{
+					id: 2,
 					name: "C",
 					price: -10000,
 				},
 				{
+					id: 3,
 					name: "C++",
 					price: -10000,
 				},
 				{
+					id: 4,
 					name: "Java",
 					price: -5000,
 				},
 				{
+					id: 5,
 					name: "C#",
 					price: -10000,
 				},
 				{
+					id: 6,
 					name: "JavaScript",
 					price: -1000,
 				},
 				{
+					id: 7,
 					name: "Assembly Language",
 					price: -1000000,
 				},
 				{
+					id: 8,
 					name: "PHP",
 					price: 500,
 				},
 				{
+					id: 9,
 					name: "Invalid item",
 					price: 1000,
 					validUntil: nowPlus5.toISOString(),
 					validFrom: nowPlus1.toISOString(),
 				},
 				{
+					id: 10,
 					name: "Valid Item",
 					price: 1000,
 					validUntil: nowPlus5.toISOString(),
@@ -97,6 +107,7 @@
 					logLevel: 4,
 					removeUnavailableItems: false,
 					removeInvalidItems: false,
+					itemIdentifierField: "name",
 				},
 				updateValues
 			);

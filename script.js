@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.3.0-beta.1";
+	#version = "2.3.0-beta.2";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -12,6 +12,7 @@ class PTM {
 		removeUnavailableItems: false,
 		removeInvalidItems: true,
 		loggingTo: console,
+		itemIdentifierField: "id",
 	};
 	#items = [];
 	#callback;
@@ -58,28 +59,30 @@ class PTM {
 		this.#callback();
 	}
 
-	hasItem(itemName) {
-		this.#log(`checking user items for '${itemName}'`);
-		return this.#user.ownedItems.some((item) => item.name === itemName);
+	hasItem(itemIdentifier) {
+		this.#log(`checking user items for '${itemIdentifier}'`);
+		return this.#user.ownedItems.some(
+			(item) => item[this.#options.itemIdentifierField] === itemIdentifier
+		);
 	}
 
-	buyItem(itemName) {
-		this.#log(`buying item '${itemName}'`);
+	buyItem(itemIdentifier) {
+		this.#log(`buying item '${itemIdentifier}'`);
 
-		if (this.hasItem(itemName))
-			return this.#log(`user already has '${itemName}'`);
+		if (this.hasItem(itemIdentifier))
+			return this.#warn(`user already has '${itemIdentifier}'`);
 
-		const item = this.getItem(itemName);
+		const item = this.getItem(itemIdentifier);
 
 		if (!this.#isItemValid(item))
 			return this.#warn(
 				false,
-				`attempting to buy invalid item '${itemName}'`
+				`attempting to buy invalid item '${itemIdentifier}'`
 			);
 		if (!item) return;
 
 		if (this.#user.balance + item.price < 0)
-			return this.#log(`insufficient balance`);
+			return this.#warn(`insufficient balance`);
 
 		this.chargeUser(item.price);
 		this.#user.ownedItems.push(item);
@@ -88,19 +91,19 @@ class PTM {
 		return this;
 	}
 
-	sellItem(itemName) {
-		this.#log(`selling item '${itemName}'`);
+	sellItem(itemIdentifier) {
+		this.#log(`selling item '${itemIdentifier}'`);
 
-		const item = this.getItem(itemName);
+		const item = this.getItem(itemIdentifier);
 		if (!item) return;
 
-		if (!this.hasItem(itemName))
-			this.#log(`user does not own item '${itemName}'`);
+		if (!this.hasItem(itemIdentifier))
+			this.#warn(`user does not own item '${itemIdentifier}'`);
 
 		this.chargeUser(-item.price);
 
 		const itemIndex = this.#user.ownedItems.findIndex(
-			(item) => item.name === itemName
+			(item) => item[this.#options.itemIdentifierField] === itemIdentifier
 		);
 		if (!itemIndex < 0)
 			return this.#error(
@@ -114,13 +117,19 @@ class PTM {
 		return this;
 	}
 
-	getItem(itemName) {
-		this.#log(`searching '${itemName}'`);
+	getItem(itemIdentifier) {
+		this.#log(`searching '${itemIdentifier}'`);
 		const item =
-			this.#items.find((item) => item.name === itemName) ||
-			this.#user.ownedItems.find((item) => item.name === itemName);
+			this.#items.find(
+				(item) =>
+					item[this.#options.itemIdentifierField] === itemIdentifier
+			) ||
+			this.#user.ownedItems.find(
+				(item) =>
+					item[this.#options.itemIdentifierField] === itemIdentifier
+			);
 		if (!item)
-			return this.#warn(false, `item '${itemName}' does not exist`);
+			return this.#warn(false, `item '${itemIdentifier}' does not exist`);
 
 		item.isValid = this.#isItemValid(item);
 		return item;
@@ -232,7 +241,11 @@ class PTM {
 	}
 
 	#isItemValid(item) {
-		this.#log(`checking validity for item '${item.name}'`);
+		this.#log(
+			`checking validity for item '${
+				item[this.#options.itemIdentifierField]
+			}'`
+		);
 
 		if (!item.validUntil && !item.validFrom) return true;
 
@@ -275,7 +288,11 @@ class PTM {
 			if (this.#options.removeUnavailableItems) {
 				this.#log("removing unavailable items");
 				this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
-					this.#items.some((item) => item.name === oi.name)
+					this.#items.some(
+						(item) =>
+							item[this.#options.itemIdentifierField] ===
+							oi[this.#options.itemIdentifierField]
+					)
 				);
 				this.#saveUser();
 			}
@@ -283,7 +300,9 @@ class PTM {
 			if (this.#options.removeInvalidItems) {
 				this.#log("removing invalid items");
 				this.#user.ownedItems = this.#user.ownedItems.filter((oi) => {
-					const item = this.getItem(oi.name);
+					const item = this.getItem(
+						oi[this.#options.itemIdentifierField]
+					);
 					return this.#isItemValid(item);
 				});
 				this.#saveUser();

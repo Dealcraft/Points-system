@@ -99,6 +99,7 @@ The PTM class provides a couple of options to customize the behavior. If you wan
 | removeUnavailableItems | false        | boolean  | Whether to remove items from the user if they are not present in the available items list            |
 | removeInvalidItems     | true         | boolean  | Whether to remove items from the user if they are not longer valid caused by validFrom or validUntil |
 | loggingTo              | console      | Logger   | The logger used to log events                                                                        |
+| itemIdentifierField    | id           | string   | The field on the item object which is used to identify the item                                      |
 
 ## Refreshing the data
 
@@ -111,12 +112,13 @@ Type definitions for clarity about the types used in the documentation. The desc
 
 ### Item
 
-| field      | optional | type               | description                                                          |
-|------------|----------|--------------------|----------------------------------------------------------------------|
-| name       |          | string             | Name of the item                                                     |
-| price      |          | number             | Negative amount if user has to pay, positive if the user gets points |
-| validFrom  | [ x ]    | Date as ISO String | The date and time from which the item can be bought                  |
-| validUntil | [ x ]    | Date as ISO String | The date and time until which the item can be purchased              |
+| field      | optional | type               | description                                                                     |
+| ---------- | -------- | ------------------ | ------------------------------------------------------------------------------- |
+| id         |          | any                | Item id used to identifiy the item if option.itemIdentifierField wasn't changed |
+| name       |          | string             | Name of the item                                                                |
+| price      |          | number             | Negative amount if user has to pay, positive if the user gets points            |
+| validFrom  | [ x ]    | Date as ISO String | The date and time from which the item can be bought                             |
+| validUntil | [ x ]    | Date as ISO String | The date and time until which the item can be purchased                         |
 
 ### Storage
 
