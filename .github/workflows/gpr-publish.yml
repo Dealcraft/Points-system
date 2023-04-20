@@ -1,6 +1,12 @@
 name: Publish package to GitHub Packages
 on:
     workflow_dispatch:
+        inputs:
+            tag:
+                description: 'Publishing tag'
+                required: true
+                default: 'latest'
+                
     release:
         types: [published]
 
@@ -20,8 +26,9 @@ jobs:
                   scope: "@Dealcraft"
             - run: node ./gpr/pre-publish.js
             - run: npm ci
-            - run: npm publish --registry=https://npm.pkg.github.com/ --scope=@Dealcraft
+            - run: npm publish --registry=https://npm.pkg.github.com/ --scope=@Dealcraft --tag=$tag
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  tag: ${{ (github.event.release.prerelease == true && 'beta' || 'latest') || github.event.inputs.tag }}
             - run: node ./gpr/post-publish.js
