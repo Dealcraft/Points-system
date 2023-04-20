@@ -136,10 +136,10 @@ A number indicating which type of events get logged.
 | level | events   |
 | ----- | -------- |
 | 0     | nothing  |
-| <= 1  | errors   |
-| <= 2  | warnings |
-| <= 3  | infos    |
-| <= 4  | logs     |
+| >= 1  | errors   |
+| >= 2  | warnings |
+| >= 3  | infos    |
+| >= 4  | logs     |
 
 ### User
 
