@@ -88,32 +88,37 @@ The PTM class provides a couple of options to customize the behavior. If you wan
 
 ### Available options
 
-| option key             | default      | type     | description                                                                               |
-| ---------------------- | ------------ | -------- | ----------------------------------------------------------------------------------------- |
-| startBalance           | 100          | number   | The start balance with which each new user starts                                         |
-| storage                | localStorage | Storage  | The storage where the user data gets saved persistently                                   |
-| storagePrefix          | ptm-         | string   | The prefix for all data saved in the storage                                              |
-| logLevel               | 1            | LogLevel | Indicating which types of events get logged                                               |
-| name                   | PTM          | string   | The name visible in the logs                                                              |
-| currencyName           | pt           | string   | The currency appended to the item price in the logs                                       |
-| removeUnavailableItems | false        | boolean  | Whether to remove items from the user if they are not present in the available items list |
-| loggingTo              | console      | Logger   | The logger used to log events                                                             |
+| option key             | default      | type     | description                                                                                          |
+| ---------------------- | ------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| startBalance           | 100          | number   | The start balance with which each new user starts                                                    |
+| storage                | localStorage | Storage  | The storage where the user data gets saved persistently                                              |
+| storagePrefix          | ptm-         | string   | The prefix for all data saved in the storage                                                         |
+| logLevel               | 2            | LogLevel | Indicating which types of events get logged                                                          |
+| name                   | PTM          | string   | The name visible in the logs                                                                         |
+| currencyName           | pt           | string   | The currency appended to the item price in the logs                                                  |
+| removeUnavailableItems | false        | boolean  | Whether to remove items from the user if they are not present in the available items list            |
+| removeInvalidItems     | true         | boolean  | Whether to remove items from the user if they are not longer valid caused by validFrom or validUntil |
+| loggingTo              | console      | Logger   | The logger used to log events                                                                        |
+| itemIdentifierField    | id           | string   | The field on the item object which is used to identify the item                                      |
 
 ## Refreshing the data
 
 For the ease of refreshing data after a interaction with the PTM, you can pass a callback function as the third parameter to the constructor of the PTM Class, which will be called everytime the user changes.  
-The callback will be called with the user information as the first parameter and all the available items as the second parameter.
+The callback will be called with the user information as the first parameter, all the available items as the second parameter and the PTM instance as the third parameter.
 
 ## Types
 
-Type definitions for clarity about the types used in the documentation
+Type definitions for clarity about the types used in the documentation. The described fields are mandatory until stated otherwise, however any additional fields won't affect the PTM.
 
 ### Item
 
-| field | type   | description                                                          |
-| ----- | ------ | -------------------------------------------------------------------- |
-| name  | string | Name of the item                                                     |
-| price | number | Negative amount if user has to pay, positive if the user gets points |
+| field      | optional | type               | description                                                                     |
+| ---------- | -------- | ------------------ | ------------------------------------------------------------------------------- |
+| id         |          | any                | Item id used to identifiy the item if option.itemIdentifierField wasn't changed |
+| name       |          | string             | Name of the item                                                                |
+| price      |          | number             | Negative amount if user has to pay, positive if the user gets points            |
+| validFrom  | [ x ]    | Date as ISO String | The date and time from which the item can be bought                             |
+| validUntil | [ x ]    | Date as ISO String | The date and time until which the item can be purchased                         |
 
 ### Storage
 
