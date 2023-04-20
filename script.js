@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.3.0-beta.2";
+	#version = "2.3.0";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -48,7 +48,7 @@ class PTM {
 						}),
 					};
 
-					callback(mappedUser, mappedItems);
+					callback(mappedUser, mappedItems, this);
 				} catch (e) {
 					this.#error(false, e);
 				}
@@ -70,7 +70,7 @@ class PTM {
 		this.#log(`buying item '${itemIdentifier}'`);
 
 		if (this.hasItem(itemIdentifier))
-			return this.#warn(`user already has '${itemIdentifier}'`);
+			return this.#warn(false, `user already has '${itemIdentifier}'`);
 
 		const item = this.getItem(itemIdentifier);
 
@@ -82,7 +82,7 @@ class PTM {
 		if (!item) return;
 
 		if (this.#user.balance + item.price < 0)
-			return this.#warn(`insufficient balance`);
+			return this.#warn(false, `insufficient balance`);
 
 		this.chargeUser(item.price);
 		this.#user.ownedItems.push(item);
@@ -98,7 +98,7 @@ class PTM {
 		if (!item) return;
 
 		if (!this.hasItem(itemIdentifier))
-			this.#warn(`user does not own item '${itemIdentifier}'`);
+			this.#warn(false, `user does not own item '${itemIdentifier}'`);
 
 		this.chargeUser(-item.price);
 
@@ -232,7 +232,7 @@ class PTM {
 						}),
 					};
 
-					callback(mappedUser, mappedItems);
+					callback(mappedUser, mappedItems, this);
 				} catch (e) {
 					this.#error(false, e);
 				}

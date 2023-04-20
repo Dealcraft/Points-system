@@ -104,7 +104,7 @@ The PTM class provides a couple of options to customize the behavior. If you wan
 ## Refreshing the data
 
 For the ease of refreshing data after a interaction with the PTM, you can pass a callback function as the third parameter to the constructor of the PTM Class, which will be called everytime the user changes.  
-The callback will be called with the user information as the first parameter and all the available items as the second parameter.
+The callback will be called with the user information as the first parameter, all the available items as the second parameter and the PTM instance as the third parameter.
 
 ## Types
 

@@ -90,6 +90,7 @@
 					validUntil: nowPlus5.toISOString(),
 				},
 			];
+
 			const withdrawButton = document.querySelector("[data-withdraw]");
 			const depositButton = document.querySelector("[data-deposit]");
 			const itemContainer = document.querySelector(
@@ -101,15 +102,23 @@
 			const ownedItemsContainer =
 				document.querySelector("[data-owned-items]");
 			const amountInput = document.querySelector("[data-amount]");
+
 			const ptm = new PTM(
 				items,
 				{
 					logLevel: 4,
 					removeUnavailableItems: false,
 					removeInvalidItems: false,
-					itemIdentifierField: "name",
 				},
-				updateValues
+				(user, itemsPTM, tempPTM) => {
+					createItemList(itemsPTM, itemContainer, tempPTM);
+					createItemList(
+						user.ownedItems,
+						ownedItemsContainer,
+						tempPTM
+					);
+					renderBalance(tempPTM);
+				}
 			);
 
 			withdrawButton.addEventListener("click", () => {
@@ -120,7 +129,7 @@
 				ptm.chargeUser(amountInput.value);
 			});
 
-			function createItemList(items, parent) {
+			function createItemList(items, parent, tempPTM) {
 				parent.innerHTML = "";
 
 				for (const item of items) {
@@ -141,31 +150,22 @@
 					itemElement.appendChild(textContainer);
 
 					const buttonElement = document.createElement("button");
-					let hasItem = ptm.hasItem(item.name);
+					let hasItem = tempPTM.hasItem(item.id);
 					buttonElement.innerText = hasItem ? "Sell" : "Buy";
 					buttonElement.addEventListener("click", () => {
-						if (hasItem) ptm.sellItem(item.name);
-						else ptm.buyItem(item.name);
+						if (hasItem) ptm.sellItem(item.id);
+						else ptm.buyItem(item.id);
 					});
-					itemElement.dataset.item = item.name;
+					itemElement.dataset.item = item.id;
 					itemElement.appendChild(buttonElement);
 
 					parent.appendChild(itemElement);
 				}
 			}
 
-			function updateValues(user, itemsPTM) {
-				console.log(user, itemsPTM);
-				createItemList(items, itemContainer);
-				createItemList(ptm.userItems, ownedItemsContainer);
-				renderBalance();
+			function renderBalance(tempPTM) {
+				currentBalanceContainer.innerHTML = `<h2>Current Balance: ${tempPTM.balance}pt</h2>`;
 			}
-
-			function renderBalance() {
-				currentBalanceContainer.innerHTML = `<h2>Current Balance: ${ptm.balance}pt</h2>`;
-			}
-
-			updateValues();
 		</script>
 	</body>
 </html>
