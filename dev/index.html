@@ -29,6 +29,12 @@
 
 		<script src="../script.js"></script>
 		<script>
+			const now = new Date();
+			const nowPlus5 = now;
+			nowPlus5.setHours(now.getHours() + 5);
+			const nowPlus1 = now;
+			nowPlus1.setHours(now.getHours() + 1);
+
 			const items = [
 				{
 					name: "Python",
@@ -62,6 +68,17 @@
 					name: "PHP",
 					price: 500,
 				},
+				{
+					name: "Invalid item",
+					price: 1000,
+					validUntil: nowPlus5.toISOString(),
+					validFrom: nowPlus1.toISOString(),
+				},
+				{
+					name: "Valid Item",
+					price: 1000,
+					validUntil: nowPlus5.toISOString(),
+				},
 			];
 			const withdrawButton = document.querySelector("[data-withdraw]");
 			const depositButton = document.querySelector("[data-deposit]");
@@ -76,7 +93,11 @@
 			const amountInput = document.querySelector("[data-amount]");
 			const ptm = new PTM(
 				items,
-				{ logLevel: 4, removeUnavailableItems: false },
+				{
+					logLevel: 4,
+					removeUnavailableItems: false,
+					removeInvalidItems: false,
+				},
 				updateValues
 			);
 
