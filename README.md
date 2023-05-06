@@ -88,18 +88,20 @@ The PTM class provides a couple of options to customize the behavior. If you wan
 
 ### Available options
 
-| option key             | default      | type     | description                                                                                          |
-| ---------------------- | ------------ | -------- | ---------------------------------------------------------------------------------------------------- |
-| startBalance           | 100          | number   | The start balance with which each new user starts                                                    |
-| storage                | localStorage | Storage  | The storage where the user data gets saved persistently                                              |
-| storagePrefix          | ptm-         | string   | The prefix for all data saved in the storage                                                         |
-| logLevel               | 2            | LogLevel | Indicating which types of events get logged                                                          |
-| name                   | PTM          | string   | The name visible in the logs                                                                         |
-| currencyName           | pt           | string   | The currency appended to the item price in the logs                                                  |
-| removeUnavailableItems | false        | boolean  | Whether to remove items from the user if they are not present in the available items list            |
-| removeInvalidItems     | true         | boolean  | Whether to remove items from the user if they are not longer valid caused by validFrom or validUntil |
-| loggingTo              | console      | Logger   | The logger used to log events                                                                        |
-| itemIdentifierField    | id           | string   | The field on the item object which is used to identify the item                                      |
+| option key             | default      | type         | description                                                                                          |
+| ---------------------- | ------------ | ------------ | ---------------------------------------------------------------------------------------------------- |
+| startBalance           | 100          | number       | The start balance with which each new user starts                                                    |
+| storage                | localStorage | Storage      | The storage where the user data gets saved persistently                                              |
+| storagePrefix          | ptm-         | string       | The prefix for all data saved in the storage                                                         |
+| logLevel               | 2            | LogLevel     | Indicating which types of events get logged                                                          |
+| name                   | PTM          | string       | The name visible in the logs                                                                         |
+| currencyName           | pt           | string       | The currency appended to the item price in the logs                                                  |
+| removeUnavailableItems | false        | boolean      | Whether to remove items from the user if they are not present in the available items list            |
+| removeInvalidItems     | true         | boolean      | Whether to remove items from the user if they are not longer valid caused by validFrom or validUntil |
+| loggingTo              | console      | Logger       | The logger used to log events                                                                        |
+| itemIdentifierField    | id           | string       | The field on the item object which is used to identify the item                                      |
+| save                   | saveFunction | SaveFunction | The function used to save the user                                                                   |
+| load                   | loadFunction | LoadFunction | The function used to load the user                                                                   |
 
 ## Refreshing the data
 
@@ -158,3 +160,11 @@ Every logger implementing the following methods can be used to log the events
 | info  | function(...args) | A function accepting a undefined number of arguments as input and logs them as a info entry    |
 | warn  | function(...args) | A function accepting a undefined number of arguments as input and logs them as a warning entry |
 | error | function(...args) | A function accepting a undefined number of arguments as input and logs them as a error entry   |
+
+### SaveFunction
+
+The save function's this value is binded to the ptm instance. The only parameter passed to the save function is the user that should be saved.
+
+### LoadFunction
+
+The load function's this value is binded to the ptm instance. The load function has to return the user object as defined in the User type and may **not** return a promise.
