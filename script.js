@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.4.0-beta";
+	#version = "2.4.0-beta.1";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -27,37 +27,9 @@ class PTM {
 
 			if (base64) {
 				this.#log("parsing storage data");
-				this.#user = JSON.parse(atob(base64));
-
-				if (this.#options.removeUnavailableItems) {
-					this.#log("removing unavailable items");
-					this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
-						this.#items.some(
-							(item) =>
-								item[this.#options.itemIdentifierField] ===
-								oi[this.#options.itemIdentifierField]
-						)
-					);
-					this.#saveUser();
-				}
-
-				if (this.#options.removeInvalidItems) {
-					this.#log("removing invalid items");
-					this.#user.ownedItems = this.#user.ownedItems.filter(
-						(oi) => {
-							const item = this.getItem(
-								oi[this.#options.itemIdentifierField]
-							);
-							return this.#isItemValid(item);
-						}
-					);
-					this.#saveUser();
-				}
-
-				this.#log("parsed user from storage ", this.#user);
+				return JSON.parse(atob(base64));
 			} else {
-				this.#log("no user found");
-				this.#saveUser();
+				return null;
 			}
 		},
 	};
@@ -313,9 +285,9 @@ class PTM {
 	#saveUser() {
 		this.#log("saving user");
 		try {
-			this.#options.save.apply(this);
+			this.#options.save.apply(this, [this.#user]);
 		} catch (e) {
-			this.#error(false, "failed to save user");
+			this.#error(false, "failed to save user", e);
 		}
 		this.#log("saved user");
 	}
@@ -323,9 +295,46 @@ class PTM {
 	#loadUser() {
 		this.#log("loading user");
 		try {
-			this.#options.load.apply(this);
+			let user = this.#options.load.apply(this);
+			this.#log("recived user");
+
+			console.log(typeof user, user);
+
+			if (user) {
+				this.#user = user;
+
+				if (this.#options.removeUnavailableItems) {
+					this.#log("removing unavailable items");
+					this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
+						this.#items.some(
+							(item) =>
+								item[this.#options.itemIdentifierField] ===
+								oi[this.#options.itemIdentifierField]
+						)
+					);
+					this.#saveUser();
+				}
+
+				if (this.#options.removeInvalidItems) {
+					this.#log("removing invalid items");
+					this.#user.ownedItems = this.#user.ownedItems.filter(
+						(oi) => {
+							const item = this.getItem(
+								oi[this.#options.itemIdentifierField]
+							);
+							return this.#isItemValid(item);
+						}
+					);
+					this.#saveUser();
+				}
+
+				this.#log("parsed user", this.#user);
+			} else {
+				this.#log("no user found");
+				this.#saveUser();
+			}
 		} catch (e) {
-			this.#error(false, "failed to load user");
+			this.#error(false, "failed to load user", e);
 		}
 	}
 
