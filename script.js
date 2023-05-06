@@ -1,7 +1,7 @@
 "use strict";
 
 class PTM {
-	#version = "2.3.1";
+	#version = "2.4.0-beta";
 	#options = {
 		startBalance: 100,
 		storage: localStorage,
@@ -13,10 +13,56 @@ class PTM {
 		removeInvalidItems: true,
 		loggingTo: console,
 		itemIdentifierField: "id",
+		save: function () {
+			const base64 = btoa(JSON.stringify(this.#user));
+			this.#options.storage.setItem(
+				this.#options.storagePrefix + "user",
+				base64
+			);
+		},
+		load: function () {
+			const base64 = this.#options.storage.getItem(
+				this.#options.storagePrefix + "user"
+			);
+
+			if (base64) {
+				this.#log("parsing storage data");
+				this.#user = JSON.parse(atob(base64));
+
+				if (this.#options.removeUnavailableItems) {
+					this.#log("removing unavailable items");
+					this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
+						this.#items.some(
+							(item) =>
+								item[this.#options.itemIdentifierField] ===
+								oi[this.#options.itemIdentifierField]
+						)
+					);
+					this.#saveUser();
+				}
+
+				if (this.#options.removeInvalidItems) {
+					this.#log("removing invalid items");
+					this.#user.ownedItems = this.#user.ownedItems.filter(
+						(oi) => {
+							const item = this.getItem(
+								oi[this.#options.itemIdentifierField]
+							);
+							return this.#isItemValid(item);
+						}
+					);
+					this.#saveUser();
+				}
+
+				this.#log("parsed user from storage ", this.#user);
+			} else {
+				this.#log("no user found");
+				this.#saveUser();
+			}
+		},
 	};
 	#items = [];
 	#callback;
-
 	#user = {
 		balance: this.#options.startBalance,
 		ownedItems: [],
@@ -266,52 +312,20 @@ class PTM {
 
 	#saveUser() {
 		this.#log("saving user");
-		const base64 = btoa(JSON.stringify(this.#user));
-		this.#options.storage.setItem(
-			this.#options.storagePrefix + "user",
-			base64
-		);
+		try {
+			this.#options.save.apply(this);
+		} catch (e) {
+			this.#error(false, "failed to save user");
+		}
 		this.#log("saved user");
 	}
 
 	#loadUser() {
-		this.#log("load user from storage");
-
-		const base64 = this.#options.storage.getItem(
-			this.#options.storagePrefix + "user"
-		);
-
-		if (base64) {
-			this.#log("parsing storage data");
-			this.#user = JSON.parse(atob(base64));
-
-			if (this.#options.removeUnavailableItems) {
-				this.#log("removing unavailable items");
-				this.#user.ownedItems = this.#user.ownedItems.filter((oi) =>
-					this.#items.some(
-						(item) =>
-							item[this.#options.itemIdentifierField] ===
-							oi[this.#options.itemIdentifierField]
-					)
-				);
-				this.#saveUser();
-			}
-
-			if (this.#options.removeInvalidItems) {
-				this.#log("removing invalid items");
-				this.#user.ownedItems = this.#user.ownedItems.filter((oi) => {
-					const item = this.getItem(
-						oi[this.#options.itemIdentifierField]
-					);
-					return this.#isItemValid(item);
-				});
-				this.#saveUser();
-			}
-
-			this.#log("parsed user from storage ", this.#user);
-		} else {
-			this.#log("no user found");
-			this.#saveUser();
+		this.#log("loading user");
+		try {
+			this.#options.load.apply(this);
+		} catch (e) {
+			this.#error(false, "failed to load user");
 		}
 	}
 
